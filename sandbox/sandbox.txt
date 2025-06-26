@@ -1,0 +1,81 @@
+ORM: Object Relational Mapping
+Salah satu orm adalah sequelize
+
+Table scheme:
+Users:
+    1. id <serial>
+    2. username <varchar not null unique>
+    3. email <varchar not null unique>
+    4. passworn <verchat not null>
+    5. role <varchar>
+    6. is_active <Boolean = true>
+    7. cretaedAt
+    8. updatedAt
+
+profile:
+    1. id <serial>
+    2. first_name <varchar not null>
+    3. last_name <varchar>
+    4. profile_picture <varchar>
+    5. description <text>
+    6. gender <char>
+    7. usersId <Foreign Key Users>
+    8. cretaedAt
+    9. updatedAt
+
+todos:
+    1. id <serial>
+    2. todo <varchar not null require>
+    3. description <text>
+    4. due_date <date>
+    5. status <varchar>
+    6. category <varchar>
+    7. userId <Foreign Key>
+    8. cretaedAt
+    9. updatedAt
+
+step - by step
+- siapkan scema database
+- tentukan relasinya
+- siapkan data migrationya jika diperlukan
+
+- npm init -y
+- npm i express ejs pg
+- npm i sequelize
+
+install migrationya sequelize untuk memanage perubahan skema
+https://sequelize.org/docs/v6/other-topics/migrations/
+
+- npm install --save-dev sequelize-cli
+- npx sequelize-cli init
+
+in your config.json
+> change development part based on your refference, like sql use, pass, dialect, dbname
+
+then create your first database
+- npx sequelize db:create
+
+then do migrations
+- npx sequelize-cli model:generate --name Users --attributes first_namee:string,last_name:string,email:string,gender:string
+
+sequelize will make file in migration and file users(class) in models
+.then you have to make a validation in that migrations file
+
+then create your table with
+- npx sequelize-cli db:migrate
+
+if you want to delete the table
+.then 
+- npx db migrate:undo
+
+lets say you are forget one column on your table, then you can inject table using
+- npx sequalize model:create --name <use a descriptive name>
+
+you'll see a new migration with the name you create, then you need to code inside to add column base on this documentations; https://sequelize.org/docs/v6/other-topics/query-interface/
+
+when we code  on the migration to add column, then we have to code in the down section as well, in order to easy mantain if we want to undo it in the future
+
+we already set it up until 80% now we have to insert data into our table, using seed
+
+- npx sequelize db:seed:all or
+- npx sequelize db:seed --seed <copy of your seed file name>

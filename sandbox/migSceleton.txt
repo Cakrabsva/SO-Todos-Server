@@ -1,0 +1,5 @@
+users migration:
+    npx sequelize-cli model:generate --name Users --attributes username:string,email:string,password:string,role:string,is_active:boolean,first_name:string,last_name:string,profile_picture:string,description:string,gender:string
+
+todos migration
+    npx sequelize-cli model:generate --name Todos --attributes todo:string,description:string,due_date:string,status:string,category:string,"UserId":integer
