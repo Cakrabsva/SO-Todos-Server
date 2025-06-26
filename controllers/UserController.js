@@ -5,6 +5,13 @@ const { comparePass } = require('../helpers/hashPassword')
 const { Jwt } = require('../helpers/jwt')
 const { Users, Todos } = require ('../models')
 const { getImagePublicId } = require('../helpers/formatDate')
+const cloudinary = require('cloudinary').v2
+
+cloudinary.config({ 
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+    api_key: process.env.CLOUDINARY_API_KEY, 
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 class UserController {
     static async register (req, res, next) {
@@ -92,13 +99,7 @@ class UserController {
 
     static async updateProfilePic (req, res, next) {
         try {
-            const cloudinary = require('cloudinary').v2
-             cloudinary.config({ 
-                cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-                api_key: process.env.CLOUDINARY_API_KEY, 
-                api_secret: process.env.CLOUDINARY_API_SECRET
-            });
-
+            
             // Use upload_stream for buffers
             const fileName = req.file.originalname
             const uploadStream = cloudinary.uploader.upload_stream(
@@ -110,30 +111,23 @@ class UserController {
                     }
                     const optimizeUrl = cloudinary.url(fileName, {
                             fetch_format: 'auto',
-                            quality: 'auto'
+                            quality: 'auto',
                         });
                     const {id} = req.params
                     let data = await Users.findByPk(id)
                     let lastProfileImgUrl = data.profile_picture
 
-                    if(!lastProfileImgUrl) {
-                        await Users.update({
-                            profile_picture:optimizeUrl
-                        }, {
-                            where: {id}
-                        })
-                        res.status(200).json('User Updated')
-                    } else {
+                    if(lastProfileImgUrl) {
                         let publicId = getImagePublicId (lastProfileImgUrl)
                         cloudinary.uploader.destroy(publicId)
-                        //process update database
-                        await Users.update({
-                            profile_picture:optimizeUrl
-                        }, {
-                            where: {id}
-                        })
-                        res.status(200).json('User Updated')
-                    }                    
+                    }   
+                    //process update database
+                    await Users.update({
+                        profile_picture:optimizeUrl
+                    }, {
+                        where: {id}
+                    })
+                    res.status(200).json('User Updated')                   
                 }
             );
 
