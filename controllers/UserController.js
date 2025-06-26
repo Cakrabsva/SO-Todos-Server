@@ -1,5 +1,6 @@
 'use strict'
 
+const streamifier = require('streamifier') // Add this line
 const { comparePass } = require('../helpers/hashPassword')
 const { Jwt } = require('../helpers/jwt')
 const { Users, Todos } = require ('../models')
@@ -85,6 +86,44 @@ class UserController {
             next({name: err.name, message: err.errors[0].message}) :
             next(err)
             
+        }
+    }
+
+    static async updateProfilePic (req, res, next) {
+        try {
+            const cloudinary = require('cloudinary').v2
+             cloudinary.config({ 
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+                api_key: process.env.CLOUDINARY_API_KEY, 
+                api_secret: process.env.CLOUDINARY_API_SECRET
+            });
+
+            // Use upload_stream for buffers
+            const uploadStream = cloudinary.uploader.upload_stream(
+                { public_id: 'avatar' }, // Options for Cloudinary upload
+                async (error, result) => {
+                    if (error) {
+
+                        return next({name: "Bad Request", message:error}); // Pass the error to the Express error handler
+                    }
+
+                    //process update database
+                    const {id} = req.params
+                    await Users.update({
+                         profile_picture:result.secure_url
+                    }, {
+                        where: {id}
+                    })
+                    res.status(200).json('User Updated')
+                }
+            );
+
+            // Pipe the buffer from req.file to the Cloudinary upload stream
+           streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
+
+        } catch (err) {
+            console.error("Error in updateProfilePic:", err);
+            next(err);
         }
     }
 }
