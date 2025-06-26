@@ -4,6 +4,7 @@ const streamifier = require('streamifier') // Add this line
 const { comparePass } = require('../helpers/hashPassword')
 const { Jwt } = require('../helpers/jwt')
 const { Users, Todos } = require ('../models')
+const { getImagePublicId } = require('../helpers/formatDate')
 
 class UserController {
     static async register (req, res, next) {
@@ -72,10 +73,10 @@ class UserController {
     static async updateUser (req, res, next) {
         try {
             const {id} = req.params
-            const {email, first_name, last_name, profile_picture, description, gender} = req.body
+            const { first_name, last_name, profile_picture, description, gender} = req.body
 
             await Users.update({
-                email, first_name, last_name, profile_picture, description, gender, update: new Date()
+                 first_name, last_name, profile_picture, description, gender, update: new Date()
             }, {
                 where: {id}
             })
@@ -99,22 +100,40 @@ class UserController {
             });
 
             // Use upload_stream for buffers
+            const fileName = req.file.originalname
             const uploadStream = cloudinary.uploader.upload_stream(
-                { public_id: 'avatar' }, // Options for Cloudinary upload
+                { public_id: fileName }, // Options for Cloudinary upload
                 async (error, result) => {
                     if (error) {
 
                         return next({name: "Bad Request", message:error}); // Pass the error to the Express error handler
                     }
-
-                    //process update database
+                    const optimizeUrl = cloudinary.url(fileName, {
+                            fetch_format: 'auto',
+                            quality: 'auto'
+                        });
                     const {id} = req.params
-                    await Users.update({
-                         profile_picture:result.secure_url
-                    }, {
-                        where: {id}
-                    })
-                    res.status(200).json('User Updated')
+                    let data = await Users.findByPk(id)
+                    let lastProfileImgUrl = data.profile_picture
+
+                    if(!lastProfileImgUrl) {
+                        await Users.update({
+                            profile_picture:optimizeUrl
+                        }, {
+                            where: {id}
+                        })
+                        res.status(200).json('User Updated')
+                    } else {
+                        let publicId = getImagePublicId (lastProfileImgUrl)
+                        cloudinary.uploader.destroy(publicId)
+                        //process update database
+                        await Users.update({
+                            profile_picture:optimizeUrl
+                        }, {
+                            where: {id}
+                        })
+                        res.status(200).json('User Updated')
+                    }                    
                 }
             );
 
