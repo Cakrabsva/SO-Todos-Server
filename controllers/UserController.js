@@ -28,7 +28,6 @@ class UserController {
 
     static async login (req, res, next) {
         const {username, password} = req.body
-
         try{
             if (!username) {
                 next({name:'Bad Request', message: 'username is require'})
@@ -52,7 +51,7 @@ class UserController {
             }
 
             const accessToken = Jwt.getToken({id: user.id})
-            res.status(201).json({message: accessToken})
+            res.status(201).json({token: accessToken, id: user.id})
         }catch(err) {
             next(err)
         }

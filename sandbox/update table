@@ -1,0 +1,2 @@
+npx sequelize-cli migration:generate --name add-isDone-column-to-nama-Todos
+npx sequelize-cli db:migrate

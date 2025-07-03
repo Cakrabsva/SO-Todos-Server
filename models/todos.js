@@ -47,8 +47,9 @@ module.exports = (sequelize, DataTypes) => {
           },
           key: 'id'
       }
-    } 
-  }, {
+    },
+    isDone: DataTypes.BOOLEAN
+  },{
     sequelize,
     modelName: 'Todos',
   });
