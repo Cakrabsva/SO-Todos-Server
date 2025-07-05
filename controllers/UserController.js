@@ -79,10 +79,10 @@ class UserController {
     static async updateUser (req, res, next) {
         try {
             const {id} = req.params
-            const { first_name, last_name, profile_picture, description, gender} = req.body
+            const { first_name, last_name, profile_picture, email, description, gender} = req.body
 
             await Users.update({
-                 first_name, last_name, profile_picture, description, gender, update: new Date()
+                 first_name, last_name, profile_picture, description, gender, email, update: new Date()
             }, {
                 where: {id}
             })

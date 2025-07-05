@@ -48,7 +48,10 @@ module.exports = (sequelize, DataTypes) => {
           key: 'id'
       }
     },
-    isDone: DataTypes.BOOLEAN
+    isDone: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    } 
   },{
     sequelize,
     modelName: 'Todos',

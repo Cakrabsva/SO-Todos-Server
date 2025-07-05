@@ -20,9 +20,9 @@ class TodoController {
     static async updateTodo (req, res, next) {
         try {
             const {id} = req.params
-            const {todo, description, status, category} = req.body
+            const {todo, description, status, category, isDone, due_date} = req.body
             await Todos.update({
-                todo, description, status, category, updatedAt: new Date()
+                todo, description, status, category, updatedAt: new Date(), isDone, due_date
             },{where: {
                 id
             }

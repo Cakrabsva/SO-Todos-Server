@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
           msg: 'username cannot empty'
         },
         len: {
-          args: [5,8],
+          args: [5],
           msg: 'username should contains 5 - 8 character'
         }
       }
