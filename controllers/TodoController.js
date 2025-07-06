@@ -20,9 +20,9 @@ class TodoController {
     static async updateTodo (req, res, next) {
         try {
             const {id} = req.params
-            const {todo, description, status, category, isDone, due_date} = req.body
+            const {todo, description, status, category, isDone, due_date, label_color} = req.body
             await Todos.update({
-                todo, description, status, category, updatedAt: new Date(), isDone, due_date
+                todo, description, status, category, updatedAt: new Date(), isDone, due_date, label_color
             },{where: {
                 id
             }
@@ -35,11 +35,11 @@ class TodoController {
 
     static async addTodo (req, res, next) {
         const {id} = req.params
-        const {todo, description, status, category, due_date} = req.body
+        const {todo, description, status, category, due_date, label_color} = req.body
         
         try{
             await Todos.create ({
-                todo, description, status, category, UserId:id, due_date
+                todo, description, status, category, UserId:id, due_date, label_color
             }) 
             res.send('Added')
         } catch (err) {

@@ -1,2 +1,5 @@
 npx sequelize-cli migration:generate --name add-isDone-column-to-nama-Todos
 npx sequelize-cli db:migrate
+
+npx sequelize-cli migration:generate --name add-label_color-column-to-Todos
+npx sequelize-cli db:migrate

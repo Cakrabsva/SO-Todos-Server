@@ -5,7 +5,9 @@ const { comparePass } = require('../helpers/hashPassword')
 const { Jwt } = require('../helpers/jwt')
 const { Users, Todos } = require ('../models')
 const { getImagePublicId } = require('../helpers/formatDate')
+const { firstNameGenerator } = require('../helpers/firstNameGenerator')
 const cloudinary = require('cloudinary').v2
+const path = require('path');
 
 cloudinary.config({ 
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -17,7 +19,7 @@ class UserController {
     static async register (req, res, next) {
         const {username, email, password} = req.body
         try {
-            await Users.create({username, email, password})
+            await Users.create({username, email, password, first_name:firstNameGenerator()})
             res.status(201).json('Successfully Register')
         } catch (err) {
             err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError" ?
@@ -98,40 +100,39 @@ class UserController {
 
     static async updateProfilePic (req, res, next) {
         try {
-            
             // Use upload_stream for buffers
-            const fileName = req.file.originalname
+            const fileName = path.parse(req.file.originalname).name
             const uploadStream = cloudinary.uploader.upload_stream(
                 { public_id: fileName }, // Options for Cloudinary upload
                 async (error, result) => {
                     if (error) {
-
                         return next({name: "Bad Request", message:error}); // Pass the error to the Express error handler
                     }
-                    const optimizeUrl = cloudinary.url(fileName, {
-                            fetch_format: 'auto',
-                            quality: 'auto',
-                        });
                     const {id} = req.params
                     let data = await Users.findByPk(id)
                     let lastProfileImgUrl = data.profile_picture
-
+                    
                     if(lastProfileImgUrl) {
                         let publicId = getImagePublicId (lastProfileImgUrl)
                         cloudinary.uploader.destroy(publicId)
-                    }   
-                    //process update database
-                    await Users.update({
-                        profile_picture:optimizeUrl
-                    }, {
-                        where: {id}
-                    })
-                    res.status(200).json('User Updated')                   
+                    }
+                    const cropPic = cloudinary.url(fileName   , {
+                         crop: 'auto',
+                         gravity: 'auto',
+                         width: 500,
+                         height: 500,
+                     });
+         
+                     await Users.update({
+                         profile_picture:cropPic
+                     }, {
+                         where: {id}
+                     })
                 }
             );
-
-            // Pipe the buffer from req.file to the Cloudinary upload stream
-           streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
+            streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
+            res.status(200).json('User Updated')                   
+            
 
         } catch (err) {
             console.error("Error in updateProfilePic:", err);

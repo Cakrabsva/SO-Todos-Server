@@ -51,6 +51,10 @@ module.exports = (sequelize, DataTypes) => {
     isDone: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
+    },
+    label_color: {
+      type: DataTypes.STRING,
+      defaultValue:'gray'
     } 
   },{
     sequelize,
